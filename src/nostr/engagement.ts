@@ -10,7 +10,7 @@ export async function getEvents(npubs: string[], days = 7) {
   const hexResultList = hexDataList.filter((hex) => hex.type == "npub");
 
   const hexList = hexResultList.map((h) => h.data);
-  console.log({ days });
+
   const since = Math.floor(subDays(new Date(), days).getTime() / 1000);
 
   const filter: NDKFilter = { authors: hexList, since, kinds: [1, 7] };
@@ -18,7 +18,9 @@ export async function getEvents(npubs: string[], days = 7) {
   return ndk.fetchEvents(filter);
 }
 
-export async function getFollowList(npub: string) {
+export async function getFollowList(
+  npub: string
+): Promise<{ follows: string[]; name?: string }> {
   const ndk = await getNdk();
 
   const user = ndk.getUser({
@@ -27,5 +29,7 @@ export async function getFollowList(npub: string) {
 
   const followlist = await user.follows();
 
-  return [...followlist].map((u) => u.npub);
+  const profile = await user.fetchProfile();
+
+  return { follows: [...followlist].map((u) => u.npub), name: profile?.name };
 }
